@@ -70,22 +70,24 @@
                     </div>
 
                     <div class="custom-toggle-button q-mb-lg q-mx-auto">
-                      <q-btn :class="['row', { 'bg-teal-100 text-teal-700': paymentMethod === 'cash' }]"
-                        :color="paymentMethod === 'cash' ? 'teal-100' : 'white'"
-                        :text-color="paymentMethod === 'cash' ? 'teal-700' : 'teal-700'" no-caps unelevated
-                        @click="paymentMethod = 'cash'">
+                      <q-btn :class="['row', { 'bg-teal-100 text-teal-700': paymentMethod === PAYMENT_METHOD_CASH }]"
+                        :color="paymentMethod === PAYMENT_METHOD_CASH ? 'teal-100' : 'white'"
+                        :text-color="paymentMethod === PAYMENT_METHOD_CASH ? 'teal-700' : 'teal-700'" no-caps unelevated
+                        @click="paymentMethod = PAYMENT_METHOD_CASH">
                         <img src="@/assets/images/sack-dollar.svg" alt="Dollar Icon" />
-                        <div class="q-px-sm text-xxs"> Pay by Cash ${{ formatAmount(paymentMethod === 'cash' ?
+                        <div class="q-px-sm text-xxs"> Pay by Cash ${{ formatAmount(paymentMethod ===
+                          PAYMENT_METHOD_CASH ?
                           totalAmount : 0)
                           }}</div>
                       </q-btn>
 
-                      <q-btn :class="['row', { 'bg-teal-100 text-teal-700': paymentMethod === 'card' }]"
-                        :color="paymentMethod === 'card' ? 'teal-100' : 'white'"
-                        :text-color="paymentMethod === 'card' ? 'teal-700' : 'teal-700'" no-caps unelevated
-                        @click="paymentMethod = 'card'">
+                      <q-btn :class="['row', { 'bg-teal-100 text-teal-700': paymentMethod === PAYMENT_METHOD_CARD }]"
+                        :color="paymentMethod === PAYMENT_METHOD_CARD ? 'teal-100' : 'white'"
+                        :text-color="paymentMethod === PAYMENT_METHOD_CARD ? 'teal-700' : 'teal-700'" no-caps unelevated
+                        @click="paymentMethod = PAYMENT_METHOD_CARD">
                         <img src="@/assets/images/credit-card.svg" alt="Dollar Icon" />
-                        <div class="q-px-sm text-xxs"> Pay by Card ${{ formatAmount(paymentMethod === 'card' ?
+                        <div class="q-px-sm text-xxs"> Pay by Card ${{ formatAmount(paymentMethod ===
+                          PAYMENT_METHOD_CARD ?
                           totalAmount : 0)
                           }}</div>
                       </q-btn>
@@ -106,7 +108,7 @@
 
                     <!-- Cash Total -->
                     <div class="row items-center justify-between text-center q-mb-lg q-px-md">
-                      <div class="text-xs">Pay by Cash Total</div>
+                      <div class="text-xs">Pay by {{ paymentMethod }} Total</div>
                       <div class="text-xl text-red-500 text-weight-bold">
                         ${{ formatAmount(cashPaymentAmount) }}
                       </div>
@@ -333,14 +335,19 @@
 </template>
 
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
-import { computed, ref, watch } from 'vue'
-import { locations, payments, type Payment } from '../mock/mock.js'
+import { useQuasar } from 'quasar';
+import { computed, ref, watch } from 'vue';
+import { locations, payments, type Payment } from '../mock/mock.js';
+
+const PAYMENT_METHOD_CARD = 'Card' as const;
+const PAYMENT_METHOD_CASH = 'Cash' as const;
+
+type PaymentMethod = typeof PAYMENT_METHOD_CARD | typeof PAYMENT_METHOD_CASH;
 
 interface PaymentData {
   amount: number
   description: string
-  method: 'cash' | 'card'
+  method: PaymentMethod
   clinic: string
   timestamp: Date
 }
@@ -364,7 +371,7 @@ const props = withDefaults(defineProps<Props>(), {
 // Reactive data
 const amount = ref<number>(0)
 const description = ref<string>('')
-const paymentMethod = ref<'cash' | 'card'>('cash')
+const paymentMethod = ref<PaymentMethod>(PAYMENT_METHOD_CASH)
 const selectedClinic = ref<string>(props.defaultClinic)
 const selectedPayment = ref<string>(props.defaultPayment)
 const showSuccessDialog = ref<boolean>(false)
@@ -437,16 +444,16 @@ const totalAmount = computed<number>(() => {
 })
 
 const cashPaymentAmount = computed<number>(() => {
-  return paymentMethod.value === 'cash' ? totalAmount.value : 0
+  return paymentMethod.value === PAYMENT_METHOD_CASH ? totalAmount.value : 0
 })
 
 const merchantProcessingAmount = computed<number>(() => {
   return merchantProcessingFeeFixed.value + (merchantProcessingFeePercentage.value / 100 * amount.value)
 })
 
-const totalProcessingFee = computed<number>(() => {
-  return merchantProcessingAmount.value + patientProcessingAmount.value
-})
+// const totalProcessingFee = computed<number>(() => {
+//   return merchantProcessingAmount.value + patientProcessingAmount.value
+// })
 
 const patientProcessingAmount = computed<number>(() => {
   return patientProcessingFeeFixed.value + (patientProcessingFeePercentage.value / 100 * amount.value)
@@ -488,7 +495,7 @@ const logPayment = (): void => {
 const resetForm = (): void => {
   amount.value = 0
   description.value = ''
-  paymentMethod.value = 'cash'
+  paymentMethod.value = PAYMENT_METHOD_CASH
 }
 
 const updateProcessingFee = (): void => {
