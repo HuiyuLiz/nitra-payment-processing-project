@@ -77,7 +77,7 @@
                         <img src="@/assets/images/sack-dollar.svg" alt="Dollar Icon" />
                         <div class="q-px-sm text-xxs"> Pay by Cash ${{ formatAmount(paymentMethod === 'cash' ?
                           totalAmount : 0)
-                          }}</div>
+                        }}</div>
                       </q-btn>
 
                       <q-btn :class="['row', { 'bg-teal-100 text-teal-700': paymentMethod === 'card' }]"
@@ -87,7 +87,7 @@
                         <img src="@/assets/images/credit-card.svg" alt="Dollar Icon" />
                         <div class="q-px-sm text-xxs"> Pay by Card ${{ formatAmount(paymentMethod === 'card' ?
                           totalAmount : 0)
-                          }}</div>
+                        }}</div>
                       </q-btn>
                     </div>
 
@@ -179,68 +179,95 @@
 
   <!-- Processing Fee Edit Dialog -->
   <q-dialog v-model="showProcessingFeeDialog">
-    <q-card style="min-width: 400px">
-      <q-card-section>
-        <div class="text-h6 q-mb-md">Edit Merchant Processing Fee</div>
-        <div class="text-subtitle2 text-grey-7 q-mb-lg">
+    <q-card style="min-width: 500px">
+      <q-card-section class="row items-center q-pb-none">
+        <div class="text-2xl text-weight-bold">Edit Merchant Processing Fee</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup />
+        <div class="text-xs text-gray-700 q-mb-lg">
           Only applies to this transaction
         </div>
+      </q-card-section>
 
-        <!-- 進度條 -->
-        <div class="q-mb-md">
+      <q-card-section>
+
+
+        <!-- slider -->
+        <div class="q-mb-md q-mx-lg">
           <div class="row justify-between text-caption text-grey-7 q-mb-xs">
             <span>0</span>
-            <span>3.6%</span>
+            <span>3.5%</span>
           </div>
-          <q-slider v-model="progress" label />
-        </div>
-
-        <!-- Merchant processing fee -->
-        <div class="row items-center q-mb-md">
-          <div class="col-8">
-            <span>Merchant processing fee</span>
-          </div>
-          <div class="col-2">
-            <q-input v-model.number="merchantProcessingFee" type="number" min="0" max="3.6" step="0.01" dense
-              outlined />
-          </div>
-          <div class="col-1 text-center">%</div>
-          <div class="col-1 text-right">
-            ${{ formatAmount(merchantProcessingAmount) }}
-          </div>
-        </div>
-
-        <!-- Patient processing fee -->
-        <div class="row items-center q-mb-md">
-          <div class="col-8">
-            <span>Patient processing fee</span>
-          </div>
-          <div class="col-2">
-            <q-input v-model.number="patientProcessingFee" type="number" min="0" max="3.6" step="0.01" dense outlined />
-          </div>
-          <div class="col-1 text-center">%</div>
-          <div class="col-1 text-right">
-            ${{ formatAmount(patientProcessingAmount) }}
-          </div>
+          <q-slider v-model="progress" label color="teal-400" />
         </div>
 
         <q-separator class="q-my-md" />
 
-        <div class="text-subtitle2 text-grey-7 q-mb-md">
+        <!-- Merchant processing fee -->
+        <div class="row items-center q-mb-md">
+          <div class="col-4">
+            <span class="text-gray-900 text-sm">Merchant processing fee</span>
+          </div>
+          <div class="col-2">
+            <q-input outlined v-model="merchantProcessingFee" type="number" dense filled>
+              <template v-slot:append>
+                <div class="text-sm text-gray-700">%</div>
+              </template>
+            </q-input>
+          </div>
+          <div class="col-1 text-center text-gray-400 text-xxs">/ 3.5 %</div>
+          <div class="text-gray-400 q-mr-sm">+</div>
+          <div class="col-2">
+            <q-input outlined v-model="merchantProcessingFee" type="number" prefix="$" dense filled>
+            </q-input>
+          </div>
+          <div class="col-1 text-center text-gray-400 text-xxs">/ $0.10</div>
+        </div>
+
+        <!-- Patient processing fee -->
+        <div class="row items-center q-mb-md">
+          <div class="col-4">
+            <span class="text-gray-900 text-sm">Patient processing fee</span>
+          </div>
+          <div class="col-2">
+            <q-input outlined v-model="patientProcessingFee" type="number" dense filled>
+              <template v-slot:append>
+                <div class="text-sm text-gray-700">%</div>
+              </template>
+            </q-input>
+          </div>
+          <div class="col-1 text-center text-gray-400 text-xxs">/ 3.5 %</div>
+          <div class="text-gray-400 q-mr-sm">+</div>
+          <div class="col-2">
+            <q-input outlined v-model="merchantProcessingFee" type="number" prefix="$" dense filled>
+            </q-input>
+          </div>
+          <div class="col-1 text-center text-gray-400 text-xxs">/ $0.10</div>
+        </div>
+
+        <q-separator class="q-my-md" />
+
+        <div class="row items-center justify-center text-center">
+          <u class="text-xs text-center text-teal-400 q-mb-md">Set patient processing fee to 0</u>
+        </div>
+
+        <div class="text-sm text-black text-weight-bold q-mb-md">
           On this ${{ formatAmount(amount) }} transaction, you pay ${{ formatAmount(merchantProcessingAmount) }} and
           patient pays ${{ formatAmount(patientProcessingAmount) }}
         </div>
       </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn label="Cancel" flat v-close-popup />
-        <q-btn label="Update" color="orange" @click="updateProcessingFee" />
+      <q-separator class="-q-mx-md" />
+
+      <q-card-actions align="between" class="q-mx-md">
+        <q-btn label="Cancel" color="gray-600" flat v-close-popup unelevated no-caps />
+        <q-btn label="Update" color="orange-400" unelevated no-caps @click="updateProcessingFee" />
       </q-card-actions>
     </q-card>
   </q-dialog>
 
   <!-- Card Reader Dialog -->
-  <q-dialog v-model="showCardReaderDialog" show>
+  <q-dialog v-model="showCardReaderDialog">
     <q-card style="min-width: 500px">
       <q-card-section class="text-center">
         <img src="@/assets/images/card-payment-warining.svg" alt="card" />
@@ -269,12 +296,16 @@
     </q-card>
   </q-dialog>
 
-  <!-- Manual Card Input 對話框 -->
+  <!-- Manual Card Input Dialog -->
   <q-dialog v-model="showManualCardDialog">
-    <q-card style="min-width: 400px">
-      <q-card-section>
-        <div class="text-2xl q-mb-md text-weight-bold">Credit Card Details</div>
+    <q-card style="min-width: 500px">
+      <q-card-section class="row items-center q-pb-none">
+        <div class="text-2xl text-weight-bold">Credit Card Details</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup />
+      </q-card-section>
 
+      <q-card-section>
         <q-input v-model="cardDetails.nameOnCard" label="Name on Card" filled class="q-mb-md" />
 
         <q-input v-model="cardDetails.cardNumber" label="Card Number" filled mask="#### #### #### ####"
@@ -351,13 +382,13 @@ const patientProcessingFee = ref<number>(2.50)
 
 // Watch progress changes to update processing fees
 watch(progress, (newValue) => {
-  merchantProcessingFee.value = Number((newValue * 3.6).toFixed(2))
-  patientProcessingFee.value = Number((3.6 - merchantProcessingFee.value).toFixed(2))
+  merchantProcessingFee.value = Number((newValue * 3.5).toFixed(2))
+  patientProcessingFee.value = Number((3.5 - merchantProcessingFee.value).toFixed(2))
 })
 
 // Watch processing fees to update progress
 watch([merchantProcessingFee, patientProcessingFee], ([newMerchantFee]) => {
-  progress.value = Number((newMerchantFee / 3.6).toFixed(2))
+  progress.value = Number((newMerchantFee / 3.5).toFixed(2))
 })
 
 // Card Details
