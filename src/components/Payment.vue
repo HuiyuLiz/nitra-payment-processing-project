@@ -8,13 +8,12 @@
             <!-- Title and Clinic Selector -->
             <div class="row q-mb-md q-gutter-md items-center">
               <div class="text-h5 text-weight-medium">Collect Payment</div>
-              <q-select v-model="selectedClinic" :options="clinicOptions" standout="bg-gray-100" dense
+              <q-select v-model="selectedClinic" :options="clinicOptions" standout="bg-gray-100 text-black" dense
                 dropdown-icon="keyboard_arrow_down" dropdown-icon-class="text-gray-500">
                 <template #prepend>
                   <q-icon name="location_on" size="xs" class="text-gray-500" />
                 </template>
               </q-select>
-              <!-- <div class="text-sm text-weight-bold text-red-400 q-ml-auto" v-if="amount">Reset Payment</div> -->
               <q-btn class="text-sm text-weight-bold text-red-400 q-ml-auto" flat label="Reset Payment" no-caps
                 @click="amount = 0" />
             </div>
@@ -78,7 +77,7 @@
                         <img src="@/assets/images/sack-dollar.svg" alt="Dollar Icon" />
                         <div class="q-px-sm text-xxs"> Pay by Cash ${{ formatAmount(paymentMethod === 'cash' ?
                           totalAmount : 0)
-                        }}</div>
+                          }}</div>
                       </q-btn>
 
                       <q-btn :class="['row', { 'bg-teal-100 text-teal-700': paymentMethod === 'card' }]"
@@ -88,18 +87,22 @@
                         <img src="@/assets/images/credit-card.svg" alt="Dollar Icon" />
                         <div class="q-px-sm text-xxs"> Pay by Card ${{ formatAmount(paymentMethod === 'card' ?
                           totalAmount : 0)
-                        }}</div>
+                          }}</div>
                       </q-btn>
                     </div>
 
-                    <q-separator class="q-my-md q-mx-md" color="teal-700" />
-
+                    <q-separator class="q-my-md q-mx-md" color="teal-700" v-if="isLoggedIn" />
 
                     <!-- Card Fee -->
-                    <!-- <div class="row items-center justify-between q-mb-lg">
-                      <span class="text-grey-7">Patient Card Processing Fee</span>
-                      <q-btn label="Edit" flat color="primary" size="sm" @click="showProcessingFeeDialog = true" />
-                    </div> -->
+                    <div class="row items-center justify-between q-mb-sm q-px-m text-gray-700 q-px-md"
+                      v-if="isLoggedIn">
+                      <span>Patient Card Processing Fee</span>
+                      <q-btn label="Edit" flat color="teal-400" size="md" @click="showProcessingFeeDialog = true" />
+                      <span class="q-ml-quto">${{ formatAmount(amount) }}</span>
+                    </div>
+
+
+                    <q-separator class="q-my-md q-mx-md" color="teal-700" />
 
                     <!-- Cash Total -->
                     <div class="row items-center justify-between text-center q-mb-lg q-px-md">
@@ -114,19 +117,53 @@
 
                     <q-separator class="-q-mx-md q-my-md" />
 
-                    <!-- Clinic Info -->
-                    <div class="row items-center q-mb-lg">
-                      <q-icon name="location_on" size="sm" class="q-mr-sm text-grey-6" />
-                      <span class="text-grey-7">{{ selectedClinic }}</span>
+                    <div class="row items-center q-mb-md">
+                      <q-select v-model="selectedClinic" :options="clinicOptions" standout="bg-gray-100 text-black"
+                        dense dropdown-icon="keyboard_arrow_down" dropdown-icon-class="text-gray-500"
+                        class="full-width  q-px-md">
+                        <template #prepend>
+                          <q-icon name="location_on" size="xs" class="text-gray-500" />
+                        </template>
+                      </q-select>
+                    </div>
+
+                    <div class="row items-center q-mb-md" v-if="isLoggedIn">
+                      <q-select v-model="selectedPayment" :options="paymentsOptions" standout="bg-gray-100 text-black"
+                        label="Device Reader" dropdown-icon="keyboard_arrow_down" dropdown-icon-class="text-gray-500"
+                        class="full-width  q-px-md">
+                        <template #prepend>
+                          <q-icon name="location_on" size="xs" class="text-gray-500" />
+                        </template>
+                      </q-select>
                     </div>
 
                     <!-- Log Payment Button -->
                     <div class="row items-center q-mb-lg q-px-md">
-                      <q-btn @click="logPayment" color="orange-300" size="md"
-                        class="full-width row items-center justify-center" unelevated no-caps :disable="!isValidAmount">
+                      <q-btn @click="logPayment" color="orange-300" size="md" v-if="!isLoggedIn"
+                        class="full-width row items-center justify-center" unelevated no-caps>
                         <div class="q-px-sm row items-center justify-center"> <img
                             src="@/assets/images/money-bill-wave.svg" alt="Dollar Icon" /></div>
                         <div>Log Payment</div>
+                      </q-btn>
+                    </div>
+
+                    <!-- Initiate Payment on Reader -->
+                    <div class="row items-center q-mb-sm q-px-md" v-if="isLoggedIn">
+                      <q-btn @click="initiatePaymentOnReader" color="orange-400" size="md"
+                        class="full-width row items-center justify-center" unelevated no-caps>
+                        <div class="q-px-sm row items-center justify-center"> <img
+                            src="@/assets/images/orange-credit-card.svg" alt="Dollar Icon" /></div>
+                        <div>Initiate Payment on Reader</div>
+                      </q-btn>
+                    </div>
+
+                    <!-- Input Card Number Maually -->
+                    <div class="row items-center q-mb-lg q-px-md" v-if="isLoggedIn">
+                      <q-btn @click="inputCardNumberManually" color="orange-50" size="md"
+                        class="full-width row items-center justify-center" unelevated no-caps>
+                        <div class="q-px-sm row items-center justify-center"> <img src="@/assets/images/reader.svg"
+                            alt="Dollar Icon" /></div>
+                        <div class="text-orange-400">Input Card Number Maually</div>
                       </q-btn>
                     </div>
                   </div>
@@ -139,29 +176,8 @@
       </q-page>
     </q-page-container>
   </q-layout>
-  <!-- 成功對話框 -->
-  <q-dialog v-model="showSuccessDialog">
-    <q-card style="min-width: 300px">
-      <q-card-section class="text-center">
-        <q-icon name="check_circle" color="green" size="3rem" class="q-mb-md" />
-        <div class="text-h6">Payment Logged Successfully!</div>
-        <div class="text-subtitle2 text-grey-7 q-mt-sm">
-          Amount: ${{ formatAmount(totalAmount) }}
-        </div>
-        <div class="text-subtitle2 text-grey-7">
-          Method: {{ paymentMethodLabel }}
-        </div>
-        <div v-if="description" class="text-subtitle2 text-grey-7">
-          Description: {{ description }}
-        </div>
-      </q-card-section>
-      <q-card-actions align="center">
-        <q-btn label="OK" color="primary" v-close-popup @click="resetForm" />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
 
-  <!-- Processing Fee 編輯對話框 -->
+  <!-- Processing Fee Edit Dialog -->
   <q-dialog v-model="showProcessingFeeDialog">
     <q-card style="min-width: 400px">
       <q-card-section>
@@ -223,28 +239,31 @@
     </q-card>
   </q-dialog>
 
-  <!-- Card Reader 對話框 -->
-  <q-dialog v-model="showCardReaderDialog">
-    <q-card style="min-width: 400px">
+  <!-- Card Reader Dialog -->
+  <q-dialog v-model="showCardReaderDialog" show>
+    <q-card style="min-width: 500px">
       <q-card-section class="text-center">
-        <div class="text-h6 q-mb-md">Review Details with Patient</div>
-        <div class="text-subtitle2 text-grey-7 q-mb-lg">
+        <img src="@/assets/images/card-payment-warining.svg" alt="card" />
+        <div class="text-2xl q-mb-md text-weight-bold">
+          <img src="@/assets/images/eye.svg" alt="card" />
+          Review Details with Patient
+        </div>
+        <div class="text-sm text-grey-700 q-mb-lg">
           Review details of this transaction with the customer via the device<br>
           display. If everything looks good, proceed to process payment.
         </div>
 
-        <!-- Card Reader 圖示 -->
-        <div class="q-mb-lg">
-          <q-icon name="credit_card_reader" size="4rem" color="teal" />
-        </div>
-
-        <q-btn label="Auto-Processing in 5s" color="teal" class="full-width q-mb-md" :loading="autoProcessing"
-          @click="startAutoProcessing" />
+        <q-btn color="teal-50" class="full-width text-teal-900 q-py-sm" unelevated no-caps :loading="autoProcessing"
+          @click="startAutoProcessing">Auto-Processing in <span class="text-weight-bold q-px-sm"> 5s</span></q-btn>
+        <div class="text-xxs text-gray-700" unelevated no-caps :loading="autoProcessing">Or
+          click “Process Payment” below</div>
       </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn label="Cancel" flat v-close-popup />
-        <q-btn label="Process Payment" color="orange" @click="processCardPayment" />
+      <q-separator class="-q-mx-md q-my-md" />
+
+      <q-card-actions align="between" class="q-mx-md q-my-md">
+        <q-btn label="Cancel" flat v-close-popup unelevated no-caps />
+        <q-btn label="Process Payment" color="orange-400" unelevated no-caps />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -280,7 +299,7 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
 import { computed, ref, watch } from 'vue'
-import { locations } from '../mock/mock.js'
+import { locations, payments, type Payment } from '../mock/mock.js'
 
 interface PaymentData {
   amount: number
@@ -296,11 +315,13 @@ const $q = useQuasar()
 // Props
 interface Props {
   defaultClinic?: string
+  defaultPayment?: string
   taxRate?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   defaultClinic: 'New York Clinic',
+  defaultPayment: "Device Reader 01",
   taxRate: 0
 })
 
@@ -309,6 +330,7 @@ const amount = ref<number>(0)
 const description = ref<string>('')
 const paymentMethod = ref<'cash' | 'card'>('cash')
 const selectedClinic = ref<string>(props.defaultClinic)
+const selectedPayment = ref<string>(props.defaultPayment)
 const showSuccessDialog = ref<boolean>(false)
 const showProcessingFeeDialog = ref<boolean>(false)
 const showCardReaderDialog = ref<boolean>(false)
@@ -347,6 +369,14 @@ const locationsApi = ref<{ id: number, name: string, taxRate: string, createdAt:
 
 const clinicOptions = computed(() => {
   return locationsApi.value.map(location => location.name)
+})
+
+
+// Payments
+const paymentsApi = ref<Payment[]>(payments)
+
+const paymentsOptions = computed(() => {
+  return paymentsApi.value.map(location => location.label)
 })
 
 
@@ -403,10 +433,6 @@ const updateAmount = (value: number | null): void => {
 }
 
 const logPayment = (): void => {
-  if (!isValidAmount.value) {
-    return
-  }
-
   const paymentData: PaymentData = {
     amount: totalAmount.value,
     description: description.value,
@@ -437,13 +463,13 @@ const updateProcessingFee = (): void => {
   })
 }
 
-// const initiatePaymentOnReader = (): void => {
-//   showCardReaderDialog.value = true
-// }
+const initiatePaymentOnReader = (): void => {
+  showCardReaderDialog.value = true
+}
 
-// const inputCardNumberManually = (): void => {
-//   showManualCardDialog.value = true
-// }
+const inputCardNumberManually = (): void => {
+  showManualCardDialog.value = true
+}
 
 const startAutoProcessing = (): void => {
   autoProcessing.value = true
