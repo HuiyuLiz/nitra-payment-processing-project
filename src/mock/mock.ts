@@ -1,5 +1,35 @@
+export interface Organization {
+  id: number;
+  name: string;
+  totalProcessingFeeFixed: number;
+  totalProcessingFeePercentage: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface Payment {
+  id: number;
+  label: string;
+  readerId: string;
+  status: "online" | "offline";
+  locationId: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface Location {
+  id: number;
+  name: string;
+  taxRate: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
 // Organization
-export const organization = [
+export const organization: Organization[] = [
   {
     id: 4,
     name: "Nitra Clinic",
@@ -12,7 +42,7 @@ export const organization = [
 ];
 
 // Locations
-export const locations = [
+export const locations: Location[] = [
   {
     id: 48,
     name: "New York Clinic",
