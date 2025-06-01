@@ -12,7 +12,7 @@ export interface Payment {
   id: number;
   label: string;
   readerId: string;
-  status: "online" | "offline";
+  status: string;
   locationId: number;
   createdAt: string;
   updatedAt: string;
@@ -62,7 +62,7 @@ export const locations: Location[] = [
 ];
 
 // Payment Location Readers
-export const Payment = [
+export const payments = [
   {
     id: 23,
     label: "Device Reader 01",
