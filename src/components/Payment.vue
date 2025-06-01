@@ -77,7 +77,7 @@
                         <img src="@/assets/images/sack-dollar.svg" alt="Dollar Icon" />
                         <div class="q-px-sm text-xxs"> Pay by Cash ${{ formatAmount(paymentMethod === 'cash' ?
                           totalAmount : 0)
-                        }}</div>
+                          }}</div>
                       </q-btn>
 
                       <q-btn :class="['row', { 'bg-teal-100 text-teal-700': paymentMethod === 'card' }]"
@@ -87,7 +87,7 @@
                         <img src="@/assets/images/credit-card.svg" alt="Dollar Icon" />
                         <div class="q-px-sm text-xxs"> Pay by Card ${{ formatAmount(paymentMethod === 'card' ?
                           totalAmount : 0)
-                        }}</div>
+                          }}</div>
                       </q-btn>
                     </div>
 
@@ -254,8 +254,9 @@
         </div>
 
         <q-btn color="teal-50" class="full-width text-teal-900 q-py-sm" unelevated no-caps :loading="autoProcessing"
-          @click="startAutoProcessing">Auto-Processing in <span class="text-weight-bold q-px-sm"> 5s</span></q-btn>
-        <div class="text-xxs text-gray-700" unelevated no-caps :loading="autoProcessing">Or
+          @click="startAutoProcessing">Auto-Processing in <span class="text-weight-bold q-px-sm">
+            5s</span></q-btn>
+        <div class="text-xxs text-gray-700 q-mt-sm" unelevated no-caps :loading="autoProcessing">Or
           click “Process Payment” below</div>
       </q-card-section>
 
