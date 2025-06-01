@@ -77,7 +77,7 @@
                         <img src="@/assets/images/sack-dollar.svg" alt="Dollar Icon" />
                         <div class="q-px-sm text-xxs"> Pay by Cash ${{ formatAmount(paymentMethod === 'cash' ?
                           totalAmount : 0)
-                        }}</div>
+                          }}</div>
                       </q-btn>
 
                       <q-btn :class="['row', { 'bg-teal-100 text-teal-700': paymentMethod === 'card' }]"
@@ -87,7 +87,7 @@
                         <img src="@/assets/images/credit-card.svg" alt="Dollar Icon" />
                         <div class="q-px-sm text-xxs"> Pay by Card ${{ formatAmount(paymentMethod === 'card' ?
                           totalAmount : 0)
-                        }}</div>
+                          }}</div>
                       </q-btn>
                     </div>
 
@@ -198,7 +198,9 @@
             <span>0</span>
             <span>3.5%</span>
           </div>
-          <q-slider v-model="progress" label color="teal-400" />
+          <q-slider v-model="progress" label label-color="teal-100"
+            :label-value="`$${(merchantProcessingFeePercentage).toFixed(2)}`" color="teal-400"
+            class="custom-slider q-mb-lg"></q-slider>
         </div>
 
         <q-separator class="q-my-md" />
@@ -209,7 +211,7 @@
             <span class="text-gray-900 text-sm">Merchant processing fee</span>
           </div>
           <div class="col-2">
-            <q-input outlined v-model="merchantProcessingFee" type="number" dense filled>
+            <q-input outlined v-model="merchantProcessingFeePercentage" type="number" dense filled>
               <template v-slot:append>
                 <div class="text-sm text-gray-700">%</div>
               </template>
@@ -218,19 +220,18 @@
           <div class="col-1 text-center text-gray-400 text-xxs">/ 3.5 %</div>
           <div class="text-gray-400 q-mr-sm">+</div>
           <div class="col-2">
-            <q-input outlined v-model="merchantProcessingFee" type="number" prefix="$" dense filled>
+            <q-input outlined v-model="merchantProcessingFeeFixed" type="number" prefix="$" dense filled>
             </q-input>
           </div>
           <div class="col-1 text-center text-gray-400 text-xxs">/ $0.10</div>
         </div>
-
         <!-- Patient processing fee -->
         <div class="row items-center q-mb-md">
           <div class="col-4">
             <span class="text-gray-900 text-sm">Patient processing fee</span>
           </div>
           <div class="col-2">
-            <q-input outlined v-model="patientProcessingFee" type="number" dense filled>
+            <q-input outlined v-model="patientProcessingFeePercentage" type="number" dense filled>
               <template v-slot:append>
                 <div class="text-sm text-gray-700">%</div>
               </template>
@@ -239,12 +240,11 @@
           <div class="col-1 text-center text-gray-400 text-xxs">/ 3.5 %</div>
           <div class="text-gray-400 q-mr-sm">+</div>
           <div class="col-2">
-            <q-input outlined v-model="merchantProcessingFee" type="number" prefix="$" dense filled>
+            <q-input outlined v-model="patientProcessingFeeFixed" type="number" prefix="$" dense filled>
             </q-input>
           </div>
           <div class="col-1 text-center text-gray-400 text-xxs">/ $0.10</div>
         </div>
-
         <q-separator class="q-my-md" />
 
         <div class="row items-center justify-center text-center">
@@ -291,7 +291,7 @@
 
       <q-card-actions align="between" class="q-mx-md">
         <q-btn label="Cancel" color="gray-600" flat v-close-popup unelevated no-caps />
-        <q-btn label="Process Payment" color="orange-400" unelevated no-caps />
+        <q-btn label="Process Payment" color="orange-400" unelevated no-caps @click="processManualCardPayment" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -377,17 +377,20 @@ const isInputFocused = ref<boolean>(false)
 const isLoggedIn = ref<boolean>(false)
 
 // Processing Fee data
-const merchantProcessingFee = ref<number>(1.00)
-const patientProcessingFee = ref<number>(2.50)
+const merchantProcessingFeePercentage = ref<number>(1.00)
+const merchantProcessingFeeFixed = ref<number>(0.05)
+const patientProcessingFeePercentage = ref<number>(2.50)
+const patientProcessingFeeFixed = ref<number>(0.05)
 
 // Watch progress changes to update processing fees
 watch(progress, (newValue) => {
-  merchantProcessingFee.value = Number((newValue * 3.5).toFixed(2))
-  patientProcessingFee.value = Number((3.5 - merchantProcessingFee.value).toFixed(2))
+  const totalPercentage = 3.5
+  merchantProcessingFeePercentage.value = Number((newValue * totalPercentage).toFixed(2))
+  patientProcessingFeePercentage.value = Number((totalPercentage - merchantProcessingFeePercentage.value).toFixed(2))
 })
 
 // Watch processing fees to update progress
-watch([merchantProcessingFee, patientProcessingFee], ([newMerchantFee]) => {
+watch([merchantProcessingFeePercentage, patientProcessingFeePercentage], ([newMerchantFee]) => {
   progress.value = Number((newMerchantFee / 3.5).toFixed(2))
 })
 
@@ -438,11 +441,15 @@ const cashPaymentAmount = computed<number>(() => {
 })
 
 const merchantProcessingAmount = computed<number>(() => {
-  return (amount.value * merchantProcessingFee.value) / 100
+  return merchantProcessingFeeFixed.value + (merchantProcessingFeePercentage.value / 100 * amount.value)
+})
+
+const totalProcessingFee = computed<number>(() => {
+  return merchantProcessingAmount.value + patientProcessingAmount.value
 })
 
 const patientProcessingAmount = computed<number>(() => {
-  return (amount.value * patientProcessingFee.value) / 100
+  return patientProcessingFeeFixed.value + (patientProcessingFeePercentage.value / 100 * amount.value)
 })
 
 const isCardDetailsValid = computed<boolean>(() => {
