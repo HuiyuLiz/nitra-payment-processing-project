@@ -29,8 +29,7 @@
                     <div class="text-subtitle1 text-gray-700 text-lg q-mt-xl text-center">Enter Amount</div>
                     <q-input v-model.number="amount" type="number" min="0" step="0.01" dense
                       :class="['amount-input-large', 'q-mx-auto', { 'input-expanded': isInputFocused || amount !== 0 }]"
-                      @update:model-value="updateAmount" @focus="isInputFocused = true" @blur="isInputFocused = false"
-                      borderless>
+                      @update="updateAmount" @focus="isInputFocused = true" @blur="isInputFocused = false" borderless>
                       <template #prepend>
                         <div class="amount-dollar-icon">
                           <i class="fa fa-dollar" aria-hidden="true"></i>
@@ -330,7 +329,7 @@ watch(progress, (newValue) => {
 })
 
 // Watch processing fees to update progress
-watch([merchantProcessingFee, patientProcessingFee], ([newMerchantFee, newPatientFee]) => {
+watch([merchantProcessingFee, patientProcessingFee], ([newMerchantFee]) => {
   progress.value = Number((newMerchantFee / 3.6).toFixed(2))
 })
 
@@ -438,13 +437,13 @@ const updateProcessingFee = (): void => {
   })
 }
 
-const initiatePaymentOnReader = (): void => {
-  showCardReaderDialog.value = true
-}
+// const initiatePaymentOnReader = (): void => {
+//   showCardReaderDialog.value = true
+// }
 
-const inputCardNumberManually = (): void => {
-  showManualCardDialog.value = true
-}
+// const inputCardNumberManually = (): void => {
+//   showManualCardDialog.value = true
+// }
 
 const startAutoProcessing = (): void => {
   autoProcessing.value = true
