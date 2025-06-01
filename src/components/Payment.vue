@@ -15,7 +15,7 @@
                 </template>
               </q-select>
               <q-btn class="text-sm text-weight-bold text-red-400 q-ml-auto" flat label="Reset Payment" no-caps
-                @click="amount = 0" />
+                v-if="amount" @click="resetForm" />
             </div>
 
             <!-- Main Card -->
@@ -77,7 +77,7 @@
                         <img src="@/assets/images/sack-dollar.svg" alt="Dollar Icon" />
                         <div class="q-px-sm text-xxs"> Pay by Cash ${{ formatAmount(paymentMethod === 'cash' ?
                           totalAmount : 0)
-                          }}</div>
+                        }}</div>
                       </q-btn>
 
                       <q-btn :class="['row', { 'bg-teal-100 text-teal-700': paymentMethod === 'card' }]"
@@ -87,7 +87,7 @@
                         <img src="@/assets/images/credit-card.svg" alt="Dollar Icon" />
                         <div class="q-px-sm text-xxs"> Pay by Card ${{ formatAmount(paymentMethod === 'card' ?
                           totalAmount : 0)
-                          }}</div>
+                        }}</div>
                       </q-btn>
                     </div>
 
@@ -259,10 +259,10 @@
           click “Process Payment” below</div>
       </q-card-section>
 
-      <q-separator class="-q-mx-md q-my-md" />
+      <q-separator class="-q-mx-md" />
 
-      <q-card-actions align="between" class="q-mx-md q-my-md">
-        <q-btn label="Cancel" flat v-close-popup unelevated no-caps />
+      <q-card-actions align="between" class="q-mx-md">
+        <q-btn label="Cancel" color="gray-600" flat v-close-popup unelevated no-caps />
         <q-btn label="Process Payment" color="orange-400" unelevated no-caps />
       </q-card-actions>
     </q-card>
@@ -272,25 +272,29 @@
   <q-dialog v-model="showManualCardDialog">
     <q-card style="min-width: 400px">
       <q-card-section>
-        <div class="text-h6 q-mb-md">Credit Card Details</div>
+        <div class="text-2xl q-mb-md text-weight-bold">Credit Card Details</div>
 
-        <q-input v-model="cardDetails.nameOnCard" label="Name on Card" outlined class="q-mb-md" />
+        <q-input v-model="cardDetails.nameOnCard" label="Name on Card" filled class="q-mb-md" />
 
-        <q-input v-model="cardDetails.cardNumber" label="Card Number" outlined mask="#### #### #### ####"
+        <q-input v-model="cardDetails.cardNumber" label="Card Number" filled mask="#### #### #### ####"
           class="q-mb-md" />
 
         <div class="row q-gutter-md q-mb-md">
-          <q-input v-model="cardDetails.expirationDate" label="Expiration Date" outlined mask="##/##" class="col" />
-          <q-input v-model="cardDetails.cvc" label="CVC" outlined mask="###" class="col" />
+          <q-input v-model="cardDetails.expirationDate" label="Expiration Date" filled mask="##/##" class="col" />
+          <q-input v-model="cardDetails.cvc" label="CVC" filled mask="###" class="col" />
         </div>
 
-        <q-select v-model="cardDetails.country" :options="countryOptions" label="United States" outlined
-          class="q-mb-md" />
+        <div class="row q-gutter-md q-mb-md">
+          <q-select v-model="cardDetails.country" :options="countryOptions" label="Country" filled class="col" />
+          <q-input v-model="cardDetails.ZIP" label="ZIP" filled mask="###" class="col" />
+        </div>
       </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn label="Cancel" flat v-close-popup />
-        <q-btn label="Pay $27.21" color="orange" @click="processManualCardPayment" :disable="!isCardDetailsValid" />
+      <q-separator class="-q-mx-md" />
+
+      <q-card-actions align="between" class="q-mx-md q-my-sm">
+        <q-btn label="Cancel" color="gray-600" flat v-close-popup unelevated no-caps />
+        <q-btn label="Pay $27.21" color="orange-400" unelevated no-caps />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -361,7 +365,8 @@ const cardDetails = ref({
   cardNumber: '',
   expirationDate: '',
   cvc: '',
-  country: 'United States'
+  country: 'United States',
+  ZIP: ''
 })
 
 // Locations
@@ -400,14 +405,6 @@ const cashPaymentAmount = computed<number>(() => {
   return paymentMethod.value === 'cash' ? totalAmount.value : 0
 })
 
-const isValidAmount = computed<boolean>(() => {
-  return amount.value > 0
-})
-
-const paymentMethodLabel = computed<string>(() => {
-  return paymentMethod.value === 'cash' ? 'Cash' : 'Card'
-})
-
 const merchantProcessingAmount = computed<number>(() => {
   return (amount.value * merchantProcessingFee.value) / 100
 })
@@ -420,7 +417,8 @@ const isCardDetailsValid = computed<boolean>(() => {
   return cardDetails.value.nameOnCard.length > 0 &&
     cardDetails.value.cardNumber.replace(/\s/g, '').length === 16 &&
     cardDetails.value.expirationDate.length === 5 &&
-    cardDetails.value.cvc.length === 3
+    cardDetails.value.cvc.length === 3 &&
+    cardDetails.value.ZIP.length === 1
 })
 
 // Methods
